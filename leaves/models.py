@@ -36,7 +36,9 @@ class LeaveRequest(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        permissions = [
+            ('can_approve_leaves', 'Puede aprobar ausencias'),
+        ]
 
     def __str__(self):
         return f"[{self.get_ltype_display()}] {self.employee} {self.start_date} - {self.end_date} ({self.get_status_display()})"
-

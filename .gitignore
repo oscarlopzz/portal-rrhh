@@ -1,42 +1,30 @@
-# Python
-__pycache__/
+# Python / Django
 *.py[cod]
+__pycache__/
+*.log
+*.pot
+*.pyc
 *.pyo
 *.pyd
-*.so
-*.egg-info/
-*.egg
-.Python
+*.sqlite3
+db.sqlite3
 
-# Entornos
+# Entornos / variables
+.env
 .venv/
 venv/
 env/
-ENV/
-.env
-.env.*
 
-# Django
-db.sqlite3
-/media/
+# Archivos de usuario y compilados estáticos
+media/
 staticfiles/
-collectstatic/
-*.log
+static_root/
 
-# Tests/coverage
-.coverage
-.pytest_cache/
-htmlcov/
-
-# IDE/editores
+# IDEs / OS
 .vscode/
 .idea/
-*.code-workspace
-
-# OS
 .DS_Store
 Thumbs.db
-desktop.ini
 
-# Otros
+# Node (si algún día usas)
 node_modules/
