@@ -59,23 +59,10 @@ El objetivo es mejorar la eficiencia en la administración del personal, automat
 
 Este proyecto se distribuye bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
 
-## Screenshots & Demo
+### Demo en vídeo
 
-<p align="center">
-  <img src="screenshots/home.png" alt="Inicio" width="48%" />
-  <img src="screenshots/mis_ausencias.png" alt="Mis ausencias" width="48%" />
-</p>
-<p align="center">
-  <img src="screenshots/justificaciones_revisar.png" alt="Revisión de justificantes" width="48%" />
-  <img src="screenshots/ausencias_revisar.png" alt="Revisión de ausencias" width="48%" />
-</p>
+[▶ Ver demo (MP4)](videos/demo_portal_rrhh.mp4)
 
-<h3>Demo en vídeo</h3>
-<p>
-  <a href="videos/demo_portal_rrhh.mp4">▶ Ver demo (MP4)</a>
-</p>
+<!-- Miniatura/GIF opcional que al hacer clic abre el MP4 -->
 
-<!-- Si GitHub muestra el reproductor embebido en tu README: -->
-<video src="videos/demo_portal_rrhh.mp4" controls width="800" preload="metadata">
-  Tu navegador no soporta vídeo embebido. <a href="videos/demo_portal_rrhh.mp4">Descargar MP4</a>
-</video>
+[![Ver demo](screenshots/demo_thumb.png)](videos/demo_portal_rrhh.mp4)
