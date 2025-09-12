@@ -41,3 +41,15 @@ class Justification(models.Model):
 
     def __str__(self):
         return f"#{self.id} {self.employee} - {self.get_jtype_display()} - {self.get_status_display()}"
+    
+    import os  # arriba del archivo o aquí
+
+    @property
+    def filename(self):
+        return os.path.basename(self.document.name) if self.document else ""
+
+    @property
+    def is_image(self):
+        name = (self.document.name or "").lower()
+        return name.endswith(".jpg") or name.endswith(".jpeg") or name.endswith(".png")
+

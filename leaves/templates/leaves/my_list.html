@@ -1,0 +1,76 @@
+{% extends "portalapp/base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Mis ausencias</h2>
+  <a class="btn btn-success" href="{% url 'create_leave' %}">Nueva ausencia</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-auto">
+    <select name="status" class="form-select" onchange="this.form.submit()">
+      <option value="">-- Estado --</option>
+      <option value="PENDING"  {% if status == 'PENDING' %}selected{% endif %}>Pendiente</option>
+      <option value="APPROVED" {% if status == 'APPROVED' %}selected{% endif %}>Aprobada</option>
+      <option value="REJECTED" {% if status == 'REJECTED' %}selected{% endif %}>Rechazada</option>
+    </select>
+  </div>
+  <div class="col-auto">
+    <input type="date" name="from" class="form-control" value="{{ from|default:'' }}" placeholder="Desde">
+  </div>
+  <div class="col-auto">
+    <input type="date" name="to" class="form-control" value="{{ to|default:'' }}" placeholder="Hasta">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-secondary">Filtrar</button>
+    <a class="btn btn-outline-dark" href="?">Limpiar</a>
+    <a class="btn btn-outline-success ms-2"
+   href="{% url 'my_leaves_export_csv' %}?status={{ status }}&from={{ from }}&to={{ to }}&sep=semicolon">
+  Exportar CSV
+</a>
+<a class="btn btn-outline-primary ms-2"
+   href="{% url 'my_leaves_export_xlsx' %}?status={{ status }}&from={{ from }}&to={{ to }}">
+  Exportar Excel
+</a>
+
+
+  </div>
+</form>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th><th>Tipo</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Justificada</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for l in items %}
+    <tr>
+      <td>{{ l.id }}</td>
+      <td>{{ l.get_ltype_display }}</td>
+      <td>{{ l.start_date }}</td>
+      <td>{{ l.end_date }}</td>
+      <td>{{ l.get_status_display }}</td>
+      <td>
+        {% if l.is_justified %}
+          <span class="badge text-bg-success">Sí</span>
+        {% else %}
+          <span class="badge text-bg-secondary">No</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if not l.is_justified %}
+          <a class="btn btn-sm btn-outline-primary" href="/justificantes/nuevo/?leave={{ l.id }}">
+            Adjuntar justificante
+          </a>
+        {% else %}
+          <span class="text-muted">—</span>
+        {% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7" class="text-muted">No tienes ausencias registradas.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "portalapp/base.html" %}{% block content %}
+<h2>Mis justificantes</h2>
+<a class="btn btn-primary mb-3" href="{% url 'create_justification' %}">Subir justificante</a>
+<table class="table table-striped">
+  <thead><tr><th>ID</th><th>Tipo</th><th>Fecha</th><th>Estado</th><th>Ausencia</th><th>Documento</th></tr></thead>
+  <tbody>
+  {% for j in items %}
+  <tr>
+    <td>{{ j.id }}</td>
+    <td>{{ j.get_jtype_display }}</td>
+    <td>{{ j.issue_date }}</td>
+    <td>{{ j.get_status_display }}</td>
+    <td>{% if j.leave %}#{{ j.leave.id }}{% else %}-{% endif %}</td>
+    <td>{% if j.document %}<a href="{{ j.document.url }}" target="_blank">Ver</a>{% endif %}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6" class="text-muted">No tienes justificantes.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

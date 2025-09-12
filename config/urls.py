@@ -28,4 +28,5 @@ urlpatterns = [
     path('justificantes/', include('justifications.urls')),
     path('performance/', include('performance.urls')),
     path('reports/', include('reports.urls')),
+    path('justificantes/', include('justifications.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

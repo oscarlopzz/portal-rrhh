@@ -1,0 +1,114 @@
+{% extends "portalapp/base.html" %}
+{% block content %}
+<h2>Revisión de justificantes</h2>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-auto">
+    <select name="status" class="form-select" onchange="this.form.submit()">
+      <option value="">-- Estado --</option>
+      <option value="PENDING"  {% if status == 'PENDING' %}selected{% endif %}>Pendiente</option>
+      <option value="APPROVED" {% if status == 'APPROVED' %}selected{% endif %}>Aprobado</option>
+      <option value="REJECTED" {% if status == 'REJECTED' %}selected{% endif %}>Rechazado</option>
+    </select>
+  </div>
+  <div class="col-auto">
+    <input type="text" name="q" class="form-control" placeholder="Buscar empleado..." value="{{ q|default:'' }}">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-secondary">Filtrar</button>
+    <a class="btn btn-outline-dark" href="?">Limpiar</a>
+    <!-- Exportar CSV respetando filtros -->
+    <a class="btn btn-outline-success ms-2"
+       href="{% url 'review_export_csv' %}?status={{ status }}&q={{ q }}">
+      Exportar CSV
+    </a>
+  </div>
+</form>
+
+<table class="table table-hover align-middle">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Empleado</th>
+      <th>Tipo</th>
+      <th>Fecha</th>
+      <th>Estado</th>
+      <th>Ausencia</th>
+      <th>Documento</th>
+      <th class="text-end">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for j in items %}
+    <tr>
+      <td>{{ j.id }}</td>
+      <td>{{ j.employee }}</td>
+      <td>{{ j.get_jtype_display }}</td>
+      <td>{{ j.issue_date }}</td>
+      <td>
+        {% if j.status == 'PENDING' %}
+          <span class="badge text-bg-warning">Pendiente</span>
+        {% elif j.status == 'APPROVED' %}
+          <span class="badge text-bg-success">Aprobado</span>
+        {% else %}
+          <span class="badge text-bg-danger">Rechazado</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if j.leave %}
+          #{{ j.leave.id }}
+        {% else %}
+          <span class="text-muted">—</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if j.document %}
+          <a href="{{ j.document.url }}" target="_blank">Ver</a>
+        {% else %}
+          <span class="text-muted">—</span>
+        {% endif %}
+      </td>
+      <td class="text-end">
+        <form method="post" action="{% url 'review_detail' j.id %}" class="d-inline">
+          {% csrf_token %}
+          <input type="hidden" name="decision" value="APPROVED">
+          <button class="btn btn-sm btn-success">Aprobar</button>
+        </form>
+        <form method="post" action="{% url 'review_detail' j.id %}" class="d-inline ms-1">
+          {% csrf_token %}
+          <input type="hidden" name="decision" value="REJECTED">
+          <button class="btn btn-sm btn-danger">Rechazar</button>
+        </form>
+        <a class="btn btn-sm btn-outline-primary ms-1" href="{% url 'review_detail' j.id %}">Revisar</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8" class="text-muted">No hay justificantes.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<nav aria-label="Paginación">
+  <ul class="pagination">
+    {% if items.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ items.previous_page_number }}&status={{ status }}&q={{ q }}">«</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">«</span></li>
+    {% endif %}
+
+    <li class="page-item disabled"><span class="page-link">
+      Página {{ items.number }} de {{ items.paginator.num_pages }}
+    </span></li>
+
+    {% if items.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ items.next_page_number }}&status={{ status }}&q={{ q }}">»</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">»</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "portalapp/base.html" %}{% block content %}
+<h2>Revisar justificante #{{ item.id }}</h2>
+<p><strong>Empleado:</strong> {{ item.employee }}</p>
+<p><strong>Tipo:</strong> {{ item.get_jtype_display }}</p>
+<p><strong>Fecha emisión:</strong> {{ item.issue_date }}</p>
+<p><strong>Descripción:</strong> {{ item.description|default:"-" }}</p>
+<p><strong>Ausencia:</strong> {% if item.leave %}#{{ item.leave.id }}{% else %}-{% endif %}</p>
+<p><strong>Documento:</strong> {% if item.document %}<a href="{{ item.document.url }}" target="_blank">Ver archivo</a>{% endif %}</p>
+
+<form method="post" class="mt-3">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-success">Guardar decisión</button>
+</form>
+{% endblock %}
