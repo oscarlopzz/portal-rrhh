@@ -1,0 +1,16 @@
+{% extends "emails/base_email.html" %}
+{% block body %}
+  <h2 style="margin:0 0 8px 0;">Nueva ausencia #{{ l.id }}</h2>
+  <p class="muted" style="margin:0 0 12px 0;">Solicitada por <strong>{{ l.employee }}</strong>.</p>
+
+  <table class="meta">
+    <tr><th>Tipo</th><td>{{ l.get_ltype_display }}</td></tr>
+    <tr><th>Inicio</th><td>{{ l.start_date }}</td></tr>
+    <tr><th>Fin</th><td>{{ l.end_date }}</td></tr>
+    <tr><th>Motivo</th><td>{{ l.reason|default:"—" }}</td></tr>
+  </table>
+
+  <p style="margin-top:16px;">
+    <a class="btn" href="{{ review_url }}">Revisar ausencias</a>
+  </p>
+{% endblock %}

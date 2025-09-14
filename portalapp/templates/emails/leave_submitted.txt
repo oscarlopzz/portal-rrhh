@@ -1,0 +1,9 @@
+Nueva ausencia #{{ l.id }}
+
+Empleado: {{ l.employee }}
+Tipo: {{ l.get_ltype_display }}
+Inicio: {{ l.start_date }}
+Fin: {{ l.end_date }}
+Motivo: {{ l.reason|default:"—" }}
+
+Revisar: {{ review_url }}

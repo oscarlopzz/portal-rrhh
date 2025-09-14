@@ -1,0 +1,13 @@
+Tu justificante #{{ just.id }}
+
+Estado: {{ just.get_status_display }}
+Tipo: {{ just.get_jtype_display }}   Fecha: {{ just.issue_date|date:"Y-m-d" }}
+{% if just.description %}
+
+Descripción:
+{{ just.description }}
+{% endif %}
+
+Mis justificantes: {{ my_list_url }}
+
+Portal RRHH — Notificación automática

@@ -1,0 +1,11 @@
+Tu ausencia #{{ leave.id }}
+
+Estado: {{ leave.get_status_display }}
+Tipo: {{ leave.get_ltype_display }}
+Inicio: {{ leave.start_date|date:"Y-m-d" }}   Fin: {{ leave.end_date|date:"Y-m-d" }}
+Justificada: {% if leave.is_justified %}Sí{% else %}No{% endif %}
+Nota: {{ leave.justification_note|default:leave.reason|default:'—' }}
+
+Mis ausencias: {{ my_list_url }}
+
+Portal RRHH — Notificación automática

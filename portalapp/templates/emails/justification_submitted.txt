@@ -1,0 +1,15 @@
+Nuevo justificante #{{ just.id }}
+
+Empleado: {{ employee }}
+Tipo: {{ just.get_jtype_display }}   Fecha: {{ just.issue_date|date:"Y-m-d" }}
+Ausencia: {% if just.leave_id %}#{{ just.leave_id }}{% else %}—{% endif %}
+{% if just.description %}
+
+Descripción:
+{{ just.description }}
+{% endif %}
+
+Revisar: {{ review_url }}
+Detalle: {{ detail_url }}
+
+Portal RRHH — Notificación automática
