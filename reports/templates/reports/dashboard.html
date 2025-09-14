@@ -2,36 +2,92 @@
 {% block content %}
 <h2>Reportes y estadísticas</h2>
 
+<form class="row g-2 mb-3" method="get">
+  <div class="col-auto">
+    <input type="date" name="from" class="form-control" value="{{ from|default:'' }}" placeholder="Desde">
+  </div>
+  <div class="col-auto">
+    <input type="date" name="to" class="form-control" value="{{ to|default:'' }}" placeholder="Hasta">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-secondary">Filtrar</button>
+    <a class="btn btn-outline-dark" href="?">Limpiar</a>
+  </div>
+  <div class="col-12">
+    <small class="text-muted">El rango aplica a Ausencias, Justificantes y Evaluaciones.</small>
+  </div>
+</form>
+
+<!-- KPIs con enlaces -->
 <div class="row mb-4">
   <div class="col-md-3">
-    <div class="card text-bg-light"><div class="card-body">
-      <div class="h6 text-muted">Empleados</div>
-      <div class="display-6">{{ kpis.employees_total }}</div>
-    </div></div>
+    <a class="text-decoration-none text-reset" href="/employees/">
+      <div class="card text-bg-light"><div class="card-body">
+        <div class="h6 text-muted">Empleados</div>
+        <div class="display-6">{{ kpis.employees_total }}</div>
+      </div></div>
+    </a>
   </div>
   <div class="col-md-3">
-    <div class="card text-bg-light"><div class="card-body">
-      <div class="h6 text-muted">Ausencias pendientes</div>
-      <div class="display-6">{{ kpis.leaves_pending }}</div>
-    </div></div>
+    <a class="text-decoration-none text-reset" href="{% url 'leaves_review_list' %}?status=PENDING">
+      <div class="card text-bg-light"><div class="card-body">
+        <div class="h6 text-muted">Ausencias pendientes</div>
+        <div class="display-6">{{ kpis.leaves_pending }}</div>
+      </div></div>
+    </a>
   </div>
   <div class="col-md-3">
-    <div class="card text-bg-light"><div class="card-body">
-      <div class="h6 text-muted">Justificantes pendientes</div>
-      <div class="display-6">{{ kpis.just_pending }}</div>
-    </div></div>
+    <a class="text-decoration-none text-reset" href="{% url 'review_list' %}?status=PENDING">
+      <div class="card text-bg-light"><div class="card-body">
+        <div class="h6 text-muted">Justificantes pendientes</div>
+        <div class="display-6">{{ kpis.just_pending }}</div>
+      </div></div>
+    </a>
   </div>
   <div class="col-md-3">
-    <div class="card text-bg-light"><div class="card-body">
-      <div class="h6 text-muted">Evaluaciones pendientes</div>
-      <div class="display-6">{{ kpis.evals_pending }}</div>
-    </div></div>
+    <a class="text-decoration-none text-reset" href="{% url 'performance_review_list' %}?status=PENDING">
+      <div class="card text-bg-light"><div class="card-body">
+        <div class="h6 text-muted">Evaluaciones pendientes</div>
+        <div class="display-6">{{ kpis.evals_pending }}</div>
+      </div></div>
+    </a>
   </div>
 </div>
 
+<!-- Gráficas -->
 <div class="row">
   <div class="col-md-6 mb-4">
-    <div class="card"><div class="card-header">Empleados por departamento</div>
+    <div class="card">
+      <div class="card-header">Empleados por departamento (Top 10)</div>
+      <div class="card-body">
+        <canvas id="chartDept" height="160"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">Ausencias por estado</div>
+      <div class="card-body">
+        <canvas id="chartLeaves" height="160"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header">Justificantes por tipo</div>
+      <div class="card-body">
+        <canvas id="chartJust" height="160"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tablas de detalle -->
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card"><div class="card-header">Detalle: Empleados por departamento</div>
       <div class="card-body p-0">
         <table class="table mb-0">
           <thead><tr><th>Departamento</th><th class="text-end">Total</th></tr></thead>
@@ -48,7 +104,7 @@
   </div>
 
   <div class="col-md-6 mb-4">
-    <div class="card"><div class="card-header">Ausencias por estado</div>
+    <div class="card"><div class="card-header">Detalle: Ausencias por estado</div>
       <div class="card-body p-0">
         <table class="table mb-0">
           <thead><tr><th>Estado</th><th class="text-end">Total</th></tr></thead>
@@ -63,7 +119,7 @@
   </div>
 
   <div class="col-md-6 mb-4">
-    <div class="card"><div class="card-header">Justificantes por tipo</div>
+    <div class="card"><div class="card-header">Detalle: Justificantes por tipo</div>
       <div class="card-body p-0">
         <table class="table mb-0">
           <thead><tr><th>Tipo</th><th class="text-end">Total</th></tr></thead>
@@ -77,4 +133,33 @@
     </div>
   </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const deptLabels = {{ dept_labels|safe }};
+  const deptSeries = {{ dept_series|safe }};
+  const leaveLabels = {{ leave_labels|safe }};
+  const leaveSeries = {{ leave_series|safe }};
+  const justLabels = {{ just_labels|safe }};
+  const justSeries = {{ just_series|safe }};
+
+  new Chart(document.getElementById('chartDept'), {
+    type: 'bar',
+    data: { labels: deptLabels, datasets: [{ label: 'Empleados', data: deptSeries }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  new Chart(document.getElementById('chartLeaves'), {
+    type: 'doughnut',
+    data: { labels: leaveLabels, datasets: [{ label: 'Ausencias', data: leaveSeries }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  new Chart(document.getElementById('chartJust'), {
+    type: 'pie',
+    data: { labels: justLabels, datasets: [{ label: 'Justificantes', data: justSeries }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+</script>
 {% endblock %}

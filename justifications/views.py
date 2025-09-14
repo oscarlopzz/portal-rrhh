@@ -1,15 +1,21 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.http import HttpResponse
+from django.utils import timezone
+from django.core.paginator import Paginator
+from django.db.models import Q
+import csv
+
 from .forms import JustificationCreateForm, JustificationReviewForm
 from .models import Justification
 from leaves.models import LeaveRequest
 
-from django.db.models import Q
-from django.core.paginator import Paginator
-from django.http import HttpResponse
-from django.utils import timezone
-import csv
+from portalapp.notifications import (
+    notify_rrhh_justification_submitted,
+    notify_employee_justification_decided,
+)
+
 
 @login_required
 def home(request):
@@ -73,6 +79,8 @@ def create_justification(request):
             if preselected_leave and not form.cleaned_data.get('leave'):
                 j.leave = preselected_leave
             j.save()
+            # 🔔 Notificar a RRHH
+            notify_rrhh_justification_submitted(j)
             messages.success(request, "Justificante enviado y pendiente de revisión.")
             return redirect('my_justifications')
     else:
@@ -84,9 +92,6 @@ def create_justification(request):
     return render(request, 'justifications/create.html', {'form': form})
 
 
-from django.db.models import Q
-from django.core.paginator import Paginator
-
 @login_required
 @permission_required('justifications.can_review_justifications', raise_exception=True)
 def review_list(request):
@@ -94,7 +99,7 @@ def review_list(request):
     Filtros:
       - ?status=PENDING|APPROVED|REJECTED
       - ?q=texto   (nombre/apellido/email del empleado)
-      - ?order=id|employee|jtype|issue_date|status|leave
+      - ?order=id|employee|jtype|issue_date|status|leave|created_at
       - ?dir=asc|desc
       - ?page=N
     """
@@ -103,7 +108,7 @@ def review_list(request):
     order = request.GET.get('order') or 'created_at'
     direction = request.GET.get('dir') or 'desc'
 
-    # Mapa de campos permitidos para ordenar
+    # Campos permitidos para ordenar
     ordering_map = {
         'id': 'id',
         'employee': 'employee__last_name',
@@ -177,22 +182,27 @@ def review_detail(request, pk):
             item.decided_at = timezone.now()
             item.save(update_fields=['status', 'reviewer', 'decided_at'])
             _sync_leave(item)
+            # 🔔 Notificar al empleado
+            notify_employee_justification_decided(item)
             messages.success(request, "Decisión registrada.")
             return redirect('review_list')
 
-        # 2) Alternativa: formulario de revisión (si prefieres usarlo)
+        # 2) Alternativa: formulario de revisión
         form = JustificationReviewForm(request.POST)
         if form.is_valid():
             form.save(reviewer=request.user, instance=item)
             item.decided_at = timezone.now()
             item.save(update_fields=['decided_at'])
             _sync_leave(item)
+            # 🔔 Notificar al empleado
+            notify_employee_justification_decided(item)
             messages.success(request, "Decisión registrada.")
             return redirect('review_list')
     else:
         form = JustificationReviewForm()
 
     return render(request, 'justifications/review_detail.html', {'item': item, 'form': form})
+
 
 @login_required
 @permission_required('justifications.can_review_justifications', raise_exception=True)

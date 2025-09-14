@@ -1,18 +1,24 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import LeaveRequest
-from .forms import LeaveRequestCreateForm
-
-from django.db.models import Q
-from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
+from django.core.paginator import Paginator
+from django.db.models import Q
 import csv
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment
+
+from .models import LeaveRequest
+from .forms import LeaveRequestCreateForm
+
+from portalapp.notifications import (
+    notify_rrhh_leave_submitted,
+    notify_employee_leave_decided,
+)
+
 
 @login_required
 def my_leaves(request):
@@ -48,6 +54,7 @@ def home(request):
     # /leaves/ -> redirige a /leaves/mis/
     return redirect('my_leaves')
 
+
 @login_required
 def create_leave(request):
     employee = getattr(request.user, 'employee_profile', None)
@@ -62,12 +69,15 @@ def create_leave(request):
             leave.employee = employee
             leave.status = LeaveRequest.PENDING  # por defecto
             leave.save()
+            # 🔔 Notificar a RRHH
+            notify_rrhh_leave_submitted(leave)
             messages.success(request, "Solicitud de ausencia creada y pendiente de aprobación.")
             return redirect('my_leaves')
     else:
         form = LeaveRequestCreateForm()
 
     return render(request, 'leaves/create.html', {'form': form})
+
 
 # (Opcionales, si ya los añadiste para RRHH/Supervisor)
 @login_required
@@ -102,6 +112,7 @@ def review_list(request):
         'items': page_obj,
         'status': status, 'q': q, 'from': from_str, 'to': to_str,
     })
+
 
 @login_required
 @permission_required('leaves.can_approve_leaves', raise_exception=True)
@@ -153,12 +164,13 @@ def review_detail(request, pk):
         decision = request.POST.get('decision')
         if decision in (LeaveRequest.APPROVED, LeaveRequest.REJECTED):
             item.status = decision
-            item.save()
+            item.save(update_fields=['status'])
+            # 🔔 Notificar al empleado
+            notify_employee_leave_decided(item)
             messages.success(request, "Decisión registrada.")
             return redirect('leaves_review_list')
         messages.error(request, "Decisión no válida.")
     return render(request, 'leaves/review_detail.html', {'item': item})
-
 
 
 @login_required
@@ -203,6 +215,7 @@ def my_leaves_export_csv(request):
             l.reason or ''
         ])
     return resp
+
 
 @login_required
 def my_leaves_export_xlsx(request):
@@ -254,7 +267,6 @@ def my_leaves_export_xlsx(request):
     wb.save(resp)
     return resp
 
-from django.contrib.auth.decorators import login_required, permission_required
 
 @login_required
 @permission_required('leaves.can_approve_leaves', raise_exception=True)
@@ -312,4 +324,3 @@ def review_export_xlsx(request):
     resp['Content-Disposition'] = 'attachment; filename="ausencias_revisar.xlsx"'
     wb.save(resp)
     return resp
-
