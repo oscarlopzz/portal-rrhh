@@ -45,19 +45,60 @@ def create(request):
         form = EvaluationCreateForm()
     return render(request, 'performance/create.html', {'form': form})
 
+from django.utils import timezone  # arriba con el resto de imports
+
+from django.utils import timezone  # si no está ya
+
 @login_required
 @permission_required('performance.can_review_evaluations', raise_exception=True)
 def review_detail(request, pk):
     item = get_object_or_404(Evaluation, pk=pk)
+
+    # por si el modelo usa constante COMPLETED
+    STATUS_COMPLETED = getattr(Evaluation, 'COMPLETED', 'COMPLETED')
+
     if request.method == 'POST':
-        form = EvaluationReviewForm(request.POST)
+        # Acción rápida desde el listado o el propio detalle
+        action = request.POST.get('action') or request.POST.get('decision')
+        if action:  # cualquier valor => completar
+            # opcional: si mandas score/comments en el POST, los guardamos
+            score = (request.POST.get('score') or '').strip()
+            comments = request.POST.get('comments', None)
+            if score != '':
+                try:
+                    item.score = float(score.replace(',', '.'))
+                except ValueError:
+                    pass
+            if comments is not None:
+                item.comments = comments
+
+            item.status = STATUS_COMPLETED
+            item.reviewer = request.user
+            # tu modelo usa reviewed_at (no decided_at) según tu form previo
+            if hasattr(item, 'reviewed_at'):
+                item.reviewed_at = timezone.now()
+                item.save(update_fields=['status', 'reviewer', 'reviewed_at', 'score', 'comments'])
+            else:
+                item.save(update_fields=['status', 'reviewer', 'score', 'comments'])
+            messages.success(request, 'Evaluación completada.')
+            return redirect('performance_review_list')
+
+        # Sin acción rápida: procesamos formulario (también completa)
+        form = EvaluationReviewForm(request.POST, instance=item)
         if form.is_valid():
-            form.save(reviewer=request.user, instance=item)
+            obj = form.save(commit=False)
+            obj.status = STATUS_COMPLETED
+            obj.reviewer = request.user
+            if hasattr(obj, 'reviewed_at'):
+                obj.reviewed_at = timezone.now()
+            obj.save()
             messages.success(request, 'Evaluación completada.')
             return redirect('performance_review_list')
     else:
         form = EvaluationReviewForm(initial={'score': item.score, 'comments': item.comments})
+
     return render(request, 'performance/review_detail.html', {'item': item, 'form': form})
+
 
 @login_required
 def performance_home(request):
