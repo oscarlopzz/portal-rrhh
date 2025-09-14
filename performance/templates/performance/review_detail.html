@@ -1,17 +1,49 @@
 {% extends "portalapp/base.html" %}
 {% block content %}
-<h2>Evaluación #{{ item.id }}</h2>
+<h2>Revisar evaluación #{{ item.id }}</h2>
 
-<div class="mb-3">
-  <strong>Empleado:</strong> {{ item.employee }}<br>
-  <strong>Periodo:</strong> {{ item.period_start }} – {{ item.period_end }}<br>
-  <strong>Estado:</strong> {{ item.get_status_display }}<br>
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-3"><div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-4">Empleado</dt>
+        <dd class="col-sm-8">{{ item.employee }}</dd>
+
+        <dt class="col-sm-4">Periodo</dt>
+        <dd class="col-sm-8">
+          {% if item.period_start or item.period_end %}
+            {{ item.period_start|default:"?" }} — {{ item.period_end|default:"?" }}
+          {% else %}
+            {{ item.title|default:"(Sin periodo)" }}
+          {% endif %}
+        </dd>
+
+        <dt class="col-sm-4">Estado</dt>
+        <dd class="col-sm-8">{{ item.get_status_display }}</dd>
+
+        <dt class="col-sm-4">Puntuación</dt>
+        <dd class="col-sm-8">{{ item.score|default:"—" }}</dd>
+
+        <dt class="col-sm-4">Comentarios</dt>
+        <dd class="col-sm-8">{{ item.comments|default:"—" }}</dd>
+      </dl>
+    </div></div>
+
+    <div class="card">
+      <div class="card-header">Decisión</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <div class="d-flex gap-2">
+            <button class="btn btn-success" name="decision" value="APPROVED">Aprobar</button>
+            <button class="btn btn-danger" name="decision" value="REJECTED">Rechazar</button>
+            <a class="btn btn-outline-secondary ms-auto" href="{% url 'performance_review_list' %}">Volver</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
 </div>
-
-<form method="post" class="card card-body">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button class="btn btn-success">Completar</button>
-  <a class="btn btn-outline-secondary" href="{% url 'performance_review_list' %}">Volver</a>
-</form>
 {% endblock %}

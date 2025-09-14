@@ -1,9 +1,12 @@
 {% extends "portalapp/base.html" %}
 {% block content %}
 <h2>Nueva evaluación</h2>
-<form method="post" class="card card-body">{% csrf_token %}
+<form method="post" class="card card-body">
+  {% csrf_token %}
   {{ form.as_p }}
-  <button class="btn btn-primary">Guardar</button>
-  <a class="btn btn-outline-secondary" href="{% url 'performance_review_list' %}">Cancelar</a>
+  <div class="mt-2 d-flex gap-2">
+    <button class="btn btn-primary">Crear</button>
+    <a class="btn btn-outline-secondary" href="{% url 'performance_review_list' %}">Cancelar</a>
+  </div>
 </form>
 {% endblock %}
