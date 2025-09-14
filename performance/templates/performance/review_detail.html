@@ -1,0 +1,17 @@
+{% extends "portalapp/base.html" %}
+{% block content %}
+<h2>Evaluación #{{ item.id }}</h2>
+
+<div class="mb-3">
+  <strong>Empleado:</strong> {{ item.employee }}<br>
+  <strong>Periodo:</strong> {{ item.period_start }} – {{ item.period_end }}<br>
+  <strong>Estado:</strong> {{ item.get_status_display }}<br>
+</div>
+
+<form method="post" class="card card-body">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-success">Completar</button>
+  <a class="btn btn-outline-secondary" href="{% url 'performance_review_list' %}">Volver</a>
+</form>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "portalapp/base.html" %}
+{% block content %}
+<h2>Reportes y estadísticas</h2>
+
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-bg-light"><div class="card-body">
+      <div class="h6 text-muted">Empleados</div>
+      <div class="display-6">{{ kpis.employees_total }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-light"><div class="card-body">
+      <div class="h6 text-muted">Ausencias pendientes</div>
+      <div class="display-6">{{ kpis.leaves_pending }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-light"><div class="card-body">
+      <div class="h6 text-muted">Justificantes pendientes</div>
+      <div class="display-6">{{ kpis.just_pending }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-light"><div class="card-body">
+      <div class="h6 text-muted">Evaluaciones pendientes</div>
+      <div class="display-6">{{ kpis.evals_pending }}</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card"><div class="card-header">Empleados por departamento</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead><tr><th>Departamento</th><th class="text-end">Total</th></tr></thead>
+          <tbody>
+          {% for r in dept %}
+            <tr><td>{{ r.department|default:"(Sin asignar)" }}</td><td class="text-end">{{ r.total }}</td></tr>
+          {% empty %}
+            <tr><td colspan="2" class="text-muted">Sin datos.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <div class="card"><div class="card-header">Ausencias por estado</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead><tr><th>Estado</th><th class="text-end">Total</th></tr></thead>
+          <tbody>
+            {% for r in leave_by_status %}
+              <tr><td>{{ r.status }}</td><td class="text-end">{{ r.total }}</td></tr>
+            {% empty %}<tr><td colspan="2" class="text-muted">Sin datos.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <div class="card"><div class="card-header">Justificantes por tipo</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead><tr><th>Tipo</th><th class="text-end">Total</th></tr></thead>
+          <tbody>
+            {% for r in just_by_type %}
+              <tr><td>{{ r.jtype }}</td><td class="text-end">{{ r.total }}</td></tr>
+            {% empty %}<tr><td colspan="2" class="text-muted">Sin datos.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

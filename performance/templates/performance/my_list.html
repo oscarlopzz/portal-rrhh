@@ -1,0 +1,21 @@
+{% extends "portalapp/base.html" %}
+{% block content %}
+<h2>Mis evaluaciones</h2>
+<table class="table table-striped">
+  <thead>
+    <tr><th>ID</th><th>Periodo</th><th>Puntuación</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+  {% for e in items %}
+    <tr>
+      <td>{{ e.id }}</td>
+      <td>{{ e.period_start }} – {{ e.period_end }}</td>
+      <td>{{ e.score|default:"—" }}</td>
+      <td>{{ e.get_status_display }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="text-muted">Aún no tienes evaluaciones.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

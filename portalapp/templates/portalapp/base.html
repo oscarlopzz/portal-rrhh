@@ -10,39 +10,78 @@
 
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">Portal RRHH</a>
+      <a class="navbar-brand" href="{% url 'home' %}">Portal RRHH</a>
+
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- Menú izquierdo -->
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Inicio</a></li>
           <li class="nav-item"><a class="nav-link" href="/admin/">Admin</a></li>
 
-          <!-- Módulos -->
+          <!-- Módulos principales -->
           <li class="nav-item"><a class="nav-link" href="/employees/">Empleados</a></li>
-          <li class="nav-item"><a class="nav-link" href="/leaves/mis/">Mis ausencias</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'my_leaves' %}">Mis ausencias</a></li>
           <li class="nav-item"><a class="nav-link" href="/justificantes/">Justificantes</a></li>
-          <li class="nav-item"><a class="nav-link" href="/performance/">Evaluaciones</a></li>
-          <li class="nav-item"><a class="nav-link" href="/reports/">Reportes</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'performance_home' %}">Evaluaciones</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'reports_dashboard' %}">Reportes</a></li>
+
+          <!-- Dropdown de revisión (solo si tiene permisos) -->
+          {% if perms.justifications.can_review_justifications or perms.leaves.can_approve_leaves or perms.performance.can_review_evaluations %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="rrhhMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Revisión
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="rrhhMenu">
+              {% if perms.justifications.can_review_justifications %}
+                <li><a class="dropdown-item" href="{% url 'review_list' %}">Justificantes</a></li>
+              {% endif %}
+              {% if perms.leaves.can_approve_leaves %}
+                <li><a class="dropdown-item" href="{% url 'leaves_review_list' %}">Ausencias</a></li>
+              {% endif %}
+              {% if perms.performance.can_review_evaluations %}
+                <li><a class="dropdown-item" href="{% url 'performance_review_list' %}">Evaluaciones</a></li>
+              {% endif %}
+            </ul>
+          </li>
+          {% endif %}
         </ul>
 
+        <!-- Menú derecho -->
         <ul class="navbar-nav">
-          <!-- En el futuro aquí puede ir login/logout -->
-          <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
+          {% if request.user.is_authenticated %}
+            <li class="nav-item">
+              <span class="navbar-text me-2">Hola, {{ request.user.get_username }}</span>
+            </li>
+            <!-- Usa tu propia vista de logout si la tienes -->
+            <li class="nav-item"><a class="nav-link" href="/admin/logout/">Salir</a></li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="/admin/login/?next={{ request.path }}">Login</a></li>
+          {% endif %}
         </ul>
       </div>
     </div>
   </nav>
 
   <main class="container py-4">
-    {% block content %}
-    {% endblock %}
+    <!-- Mensajes flash -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
   </main>
 
   <footer class="text-center py-3 mt-4 border-top">
-    <small>&copy; {{ year|default:"2025" }} Portal RRHH - Proyecto Django</small>
+    <small>&copy; {% now "Y" %} Portal RRHH - Proyecto Django</small>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
